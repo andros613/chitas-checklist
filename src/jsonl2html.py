@@ -250,7 +250,11 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "    </tbody>",
         "  </table>",
         "  <div class=\"license\">",
-        "    <p><strong>CC BY-SA 4.0</strong> - This work is licensed under the Creative Commons Attribution-ShareAlike 4.0 International License. You are free to share and adapt this material, provided you give appropriate credit and distribute your contributions under the same license.</p>",
+        "    <p><strong>CC BY-SA 4.0</strong> - This work is licensed under the "
+        "Creative Commons Attribution-ShareAlike 4.0 International License. "
+        "You are free to share and adapt this material, provided you give appropriate credit and distribute your "
+        "contributions under the same license. Calendar and learning schedule from Chabad.org. "
+        "Created with the help of Claude Code.</p>",
         "    <p>Amichai Rosenbaum &lt;amichai.rosenbaum@proton.me&gt;</p>",
         "  </div>",
         "</body>",

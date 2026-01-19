@@ -35,29 +35,35 @@ def parse_args() -> argparse.Namespace:
 A4_CSS = CSS(string="""
     @page {
         size: A4;
-        margin: 10mm;
+        margin: 5mm;
     }
 
     body {
-        font-size: 9pt;
+        font-size: 12pt;
     }
 
     table {
         width: 100%;
-        font-size: 8pt;
+        font-size: 10pt;
         table-layout: fixed;
+        border-collapse: collapse;
     }
 
     th, td {
         padding: 3px 4px;
         overflow: hidden;
         text-overflow: ellipsis;
+        border: 1px solid #ccc;
+    }
+
+    th {
+        background-color: #f5f5f5;
     }
 
     .checkbox {
-        width: 20px;
-        min-width: 20px;
-        max-width: 20px;
+        width: 15px;
+        min-width: 15px;
+        max-width: 15px;
     }
 
     h1 {

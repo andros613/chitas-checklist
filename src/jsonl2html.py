@@ -68,8 +68,8 @@ TEHILLIM_SCHEDULE = {
     22: "106-107",
     23: "108-112",
     24: "113-118",
-    25: "119:1-96",
-    26: "119:97-176",
+    25: "119:\n1-96",
+    26: "119:\n97-176",
     27: "120-134",
     28: "135-139",
     29: "140-144",
@@ -95,6 +95,39 @@ def get_tehillim_for_day(he_date: str, short_month: bool = False) -> str:
     if short_month and day_num == 29:
         return "140-150"
     return TEHILLIM_SCHEDULE.get(day_num, "")
+
+
+def get_tanya_book_name(tanya: str) -> str:
+    """Extract book name from tanya string (e.g., 'Likutei Amarim' from 'Likutei Amarim, middle of Chapter 19')."""
+    if not tanya:
+        return ""
+    # Book name is everything before the first comma
+    if "," in tanya:
+        return tanya.split(",")[0].strip()
+    return tanya.strip()
+
+
+def abbreviate_tanya(tanya: str, prev_book_name: str = "") -> str:
+    """Abbreviate Tanya section text for display.
+
+    If prev_book_name matches current book name, drop the book name entirely.
+    """
+    if not tanya:
+        return ""
+
+    current_book = get_tanya_book_name(tanya)
+    result = tanya
+
+    # If same book as previous row, drop the book name
+    if current_book and current_book == prev_book_name:
+        # Remove "BookName, " from the beginning
+        result = result.replace(f"{current_book}, ", "")
+
+    result = result.replace("Chapter", "Ch.")
+    result = result.replace("beginning", "beg.")
+    result = result.replace("middle", "mid.")
+    result = result.replace(" of ", " ")
+    return result
 
 
 def format_short_date(en_date: str) -> str:
@@ -128,14 +161,14 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "    tr.shabbat { background-color: #fff3cd; font-weight: 500; }",
         "    tr.special { background-color: #e3f2fd; }",
         "    .parsha { font-style: italic; }",
-        "    .checkbox { width: 25px; text-align: center; }",
-        "    .col-hedate { width: 70px; }",
-        "    .col-endate { width: 55px; }",
-        "    .col-day { width: 75px; }",
-        "    .col-special { width: 80px; }",
-        "    .col-chumash { width: 90px; }",
-        "    .col-tehillim { width: 75px; }",
-        "    .col-tanya { width: 50px; }",
+        "    .checkbox { width: 15px; text-align: center; }",
+        "    .col-hedate { width: 60px; }",
+        "    .col-endate { width: 45px; }",
+        "    .col-day { width: 45px; }",
+        "    .col-special { width: 60px; }",
+        "    .col-chumash { width: 80px; }",
+        "    .col-tehillim { width: 60px; }",
+        "    .col-tanya { width: 75px; }",
         "    .bh { position: absolute; top: 10px; right: 20px; font-size: 18px; }",
         "    .license { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }",
         "  </style>",
@@ -160,6 +193,8 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "    </thead>",
         "    <tbody>",
     ]
+
+    prev_tanya_book = ""  # Track previous Tanya book name for abbreviation
 
     for entry in entries:
         he_date = entry.get("he_date", "")
@@ -193,6 +228,9 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         aliyah_num = day_to_aliyah.get(day_of_week)
         chumash_display = f"{parsha}: {aliyah_num}" if parsha and aliyah_num else ""
         tehillim_display = get_tehillim_for_day(he_date, short_month)
+        tanya_raw = entry.get("tanya") or ""
+        tanya_display = abbreviate_tanya(tanya_raw, prev_tanya_book)
+        prev_tanya_book = get_tanya_book_name(tanya_raw)
         day_display = day_abbrev.get(day_of_week, day_of_week)
 
         html_parts.append(f"      <tr{class_attr}>")
@@ -204,7 +242,7 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         html_parts.append("        <td class=\"checkbox\">☐</td>")
         html_parts.append(f"        <td>{tehillim_display}</td>")
         html_parts.append("        <td class=\"checkbox\">☐</td>")
-        html_parts.append("        <td></td>")  # Tanya
+        html_parts.append(f"        <td>{tanya_display}</td>")
         html_parts.append("        <td class=\"checkbox\">☐</td>")
         html_parts.append("      </tr>")
 

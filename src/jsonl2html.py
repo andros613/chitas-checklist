@@ -125,7 +125,7 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "    th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; overflow: hidden; }",
         "    th { background-color: #f5f5f5; font-weight: 600; }",
         "    tr:nth-child(even) { background-color: #fafafa; }",
-        "    tr.shabbat { background-color: #fff8e1; }",
+        "    tr.shabbat { background-color: #fff3cd; font-weight: 500; }",
         "    tr.special { background-color: #e3f2fd; }",
         "    .parsha { font-style: italic; }",
         "    .checkbox { width: 25px; text-align: center; }",
@@ -185,21 +185,27 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
             "Sunday": 1, "Monday": 2, "Tuesday": 3, "Wednesday": 4,
             "Thursday": 5, "Friday": 6, "Shabbat": 7
         }
+        # Abbreviate day names
+        day_abbrev = {
+            "Sunday": "Sun", "Monday": "Mon", "Tuesday": "Tue", "Wednesday": "Wed",
+            "Thursday": "Thu", "Friday": "Fri", "Shabbat": "Shabbat"
+        }
         aliyah_num = day_to_aliyah.get(day_of_week)
         chumash_display = f"{parsha}: {aliyah_num}" if parsha and aliyah_num else ""
         tehillim_display = get_tehillim_for_day(he_date, short_month)
+        day_display = day_abbrev.get(day_of_week, day_of_week)
 
         html_parts.append(f"      <tr{class_attr}>")
         html_parts.append(f"        <td>{he_date}</td>")
         html_parts.append(f"        <td>{short_date}</td>")
-        html_parts.append(f"        <td>{day_of_week}</td>")
+        html_parts.append(f"        <td>{day_display}</td>")
         html_parts.append(f"        <td>{special_display}</td>")
         html_parts.append(f"        <td>{chumash_display}</td>")
-        html_parts.append("        <td class=\"checkbox\"></td>")
+        html_parts.append("        <td class=\"checkbox\">☐</td>")
         html_parts.append(f"        <td>{tehillim_display}</td>")
-        html_parts.append("        <td class=\"checkbox\"></td>")
+        html_parts.append("        <td class=\"checkbox\">☐</td>")
         html_parts.append("        <td></td>")  # Tanya
-        html_parts.append("        <td class=\"checkbox\"></td>")
+        html_parts.append("        <td class=\"checkbox\">☐</td>")
         html_parts.append("      </tr>")
 
     html_parts.extend([

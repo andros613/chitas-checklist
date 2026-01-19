@@ -73,6 +73,15 @@ A4_CSS = CSS(string="""
     .bh {
         font-size: 12pt;
     }
+
+    tr.shabbat {
+        background-color: #fff3cd !important;
+        font-weight: 500;
+    }
+
+    tr.special {
+        background-color: #e3f2fd !important;
+    }
 """)
 
 

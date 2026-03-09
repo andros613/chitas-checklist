@@ -145,6 +145,20 @@ def main() -> None:
         all_entries.extend(entries)
 
     logger.info(f"Total: {len(all_entries)} calendar entries from {len(args.input_files)} file(s)")
+
+    # Deduplicate by en_date, keeping first occurrence (preserve order)
+    seen = set()
+    deduped = []
+    for entry in all_entries:
+        key = entry["en_date"]
+        if key in seen:
+            continue
+        seen.add(key)
+        deduped.append(entry)
+    if len(deduped) < len(all_entries):
+        logger.info(f"Removed {len(all_entries) - len(deduped)} duplicate entries")
+    all_entries = deduped
+
     all_entries = backfill_parsha(all_entries)
 
     # Output as line-wise JSON (JSONL format)

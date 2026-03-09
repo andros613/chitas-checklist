@@ -4,6 +4,7 @@
 import argparse
 import json
 import logging
+import re
 import time
 from datetime import datetime
 from pathlib import Path
@@ -153,6 +154,37 @@ def get_rambam_header(rambam: str) -> str:
     return rambam
 
 
+_WORD_TO_NUM = {
+    "One": "1", "Two": "2", "Three": "3", "Four": "4", "Five": "5",
+    "Six": "6", "Seven": "7", "Eight": "8", "Nine": "9",
+}
+
+
+def abbreviate_special_events(events: list[str]) -> list[str]:
+    """Abbreviate special event list, combining Omer day + Tonight Count into one entry.
+
+    e.g. ['Passover', 'Omer: Day Three', 'Tonight Count 4']
+      -> ['Passover', 'Omer: 3 (Count 4)']
+    """
+    omer = next((e for e in events if e.startswith("Omer:")), None)
+    tonight = next((e for e in events if e.startswith("Tonight Count")), None)
+
+    if not omer:
+        return events
+
+    day_str = omer.split("Day ", 1)[1].strip() if "Day " in omer else omer.split(":", 1)[1].strip()
+    for word, num in _WORD_TO_NUM.items():
+        day_str = day_str.replace(word, num)
+
+    if tonight:
+        count = re.search(r"\d+", tonight)
+        combined = f"Omer: {day_str} (Count {count.group()})" if count else f"Omer: {day_str}"
+    else:
+        combined = f"Omer: {day_str}"
+
+    return [combined if e == omer else e for e in events if e != tonight]
+
+
 def format_short_date(en_date: str) -> str:
     """Convert date like '1/10/2026' or '12/28/2025' to 'Jan 10'."""
     try:
@@ -175,7 +207,7 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
         f"  <title>{title}</title>",
         "  <style>",
-        "    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; font-size: 11px; }",
+        "    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px 10px; font-size: 11px; }",
         "    h1 { text-align: center; font-size: 16px; }",
         "    table { border-collapse: collapse; width: 100%; max-width: 900px; margin: 0 auto; table-layout: fixed; }",
         "    th, td { border: 1px solid #ccc; padding: 3px 5px; text-align: left; overflow: hidden; font-size: 11px; }",
@@ -185,14 +217,14 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "    tr.special { background-color: #e3f2fd; }",
         "    .parsha { font-style: italic; }",
         "    .checkbox { width: 15px; text-align: center; }",
-        "    .col-hedate { width: 60px; }",
+        "    .col-hedate { width: 55px; }",
         "    .col-endate { width: 45px; }",
-        "    .col-day { width: 45px; }",
-        "    .col-special { width: 60px; }",
+        "    .col-day { width: 44px; }",
+        "    .col-special { width: 120px; }",
         "    .col-chumash { width: 65px; }",
-        "    .col-tehillim { width: 75px; }",
+        "    .col-tehillim { width: 45px; }",
         "    .col-tanya { width: 75px; }",
-        "    .col-rambam { width: 75px; }",
+        "    .col-rambam { width: 65px; }",
         "    .bh { position: absolute; top: 10px; right: 20px; font-size: 18px; }",
         "    .license { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }",
         "  </style>",
@@ -240,7 +272,7 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
 
         class_attr = f' class="{row_class}"' if row_class else ""
 
-        special_display = ", ".join(special_events) if special_events else ""
+        special_display = ", ".join(abbreviate_special_events(special_events)) if special_events else ""
 
         # Aliyah number: Sunday=1, Monday=2, ..., Shabbat=7
         day_to_aliyah = {

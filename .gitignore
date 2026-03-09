@@ -9,3 +9,4 @@ delme
 */delme
 data
 .idea
+src/__pycache__/

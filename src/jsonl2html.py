@@ -130,6 +130,29 @@ def abbreviate_tanya(tanya: str, prev_book_name: str = "") -> str:
     return result
 
 
+def abbreviate_rambam(rambam: str, prev_header: str = "") -> str:
+    """Abbreviate Rambam chapter text for display.
+
+    Replaces 'Chapter' with 'Ch.' and drops the header name if same as previous row,
+    replacing it with '""'.
+    """
+    if not rambam:
+        return ""
+    rambam = rambam.replace("Chapter", "Ch.")
+    if " - " in rambam:
+        header, rest = rambam.split(" - ", 1)
+        if header == prev_header:
+            return f'"" {rest}'
+    return rambam
+
+
+def get_rambam_header(rambam: str) -> str:
+    """Extract the header (book/section name) from a Rambam string."""
+    if " - " in rambam:
+        return rambam.split(" - ", 1)[0]
+    return rambam
+
+
 def format_short_date(en_date: str) -> str:
     """Convert date like '1/10/2026' or '12/28/2025' to 'Jan 10'."""
     try:
@@ -152,10 +175,10 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
         f"  <title>{title}</title>",
         "  <style>",
-        "    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; }",
-        "    h1 { text-align: center; }",
-        "    table { border-collapse: collapse; width: 100%; max-width: 800px; margin: 0 auto; table-layout: fixed; }",
-        "    th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; overflow: hidden; }",
+        "    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px; font-size: 11px; }",
+        "    h1 { text-align: center; font-size: 16px; }",
+        "    table { border-collapse: collapse; width: 100%; max-width: 900px; margin: 0 auto; table-layout: fixed; }",
+        "    th, td { border: 1px solid #ccc; padding: 3px 5px; text-align: left; overflow: hidden; font-size: 11px; }",
         "    th { background-color: #f5f5f5; font-weight: 600; }",
         "    tr:nth-child(even) { background-color: #fafafa; }",
         "    tr.shabbat { background-color: #fff3cd; font-weight: 500; }",
@@ -166,9 +189,10 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "    .col-endate { width: 45px; }",
         "    .col-day { width: 45px; }",
         "    .col-special { width: 60px; }",
-        "    .col-chumash { width: 80px; }",
-        "    .col-tehillim { width: 60px; }",
+        "    .col-chumash { width: 65px; }",
+        "    .col-tehillim { width: 75px; }",
         "    .col-tanya { width: 75px; }",
+        "    .col-rambam { width: 75px; }",
         "    .bh { position: absolute; top: 10px; right: 20px; font-size: 18px; }",
         "    .license { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }",
         "  </style>",
@@ -189,12 +213,15 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "        <th class=\"checkbox\">✓</th>",
         "        <th class=\"col-tanya\">Tanya</th>",
         "        <th class=\"checkbox\">✓</th>",
+        "        <th class=\"col-rambam\">Rambam 1 Ch.</th>",
+        "        <th class=\"checkbox\">✓</th>",
         "      </tr>",
         "    </thead>",
         "    <tbody>",
     ]
 
-    prev_tanya_book = ""  # Track previous Tanya book name for abbreviation
+    prev_tanya_book = ""
+    prev_rambam_header = ""
 
     for entry in entries:
         he_date = entry.get("he_date", "")
@@ -243,6 +270,11 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         html_parts.append(f"        <td>{tehillim_display}</td>")
         html_parts.append("        <td class=\"checkbox\">☐</td>")
         html_parts.append(f"        <td>{tanya_display}</td>")
+        html_parts.append("        <td class=\"checkbox\">☐</td>")
+        rambam_raw = entry.get("rambam_1_ch") or ""
+        rambam_display = abbreviate_rambam(rambam_raw, prev_rambam_header)
+        prev_rambam_header = get_rambam_header(rambam_raw)
+        html_parts.append(f"        <td>{rambam_display}</td>")
         html_parts.append("        <td class=\"checkbox\">☐</td>")
         html_parts.append("      </tr>")
 

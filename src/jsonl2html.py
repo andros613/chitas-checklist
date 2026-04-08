@@ -178,9 +178,9 @@ def abbreviate_special_events(events: list[str]) -> list[str]:
 
     if tonight:
         count = re.search(r"\d+", tonight)
-        combined = f"Omer: {day_str} (Count {count.group()})" if count else f"Omer: {day_str}"
+        combined = f"Omer: Day {day_str} (Tonight Count {count.group()})" if count else f"Omer: Day {day_str}"
     else:
-        combined = f"Omer: {day_str}"
+        combined = f"Omer: Day {day_str}"
 
     return [combined if e == omer else e for e in events if e != tonight]
 
@@ -207,8 +207,8 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">",
         f"  <title>{title}</title>",
         "  <style>",
-        "    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 20px 10px; font-size: 11px; }",
-        "    h1 { text-align: center; font-size: 16px; }",
+        "    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 4px 10px; font-size: 11px; }",
+        "    h1 { text-align: center; font-size: 16px; margin-bottom: 2px; }",
         "    table { border-collapse: collapse; width: 100%; max-width: 900px; margin: 0 auto; table-layout: fixed; }",
         "    th, td { border: 1px solid #ccc; padding: 3px 5px; text-align: left; overflow: hidden; font-size: 11px; }",
         "    th { background-color: #f5f5f5; font-weight: 600; }",
@@ -222,11 +222,11 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "    .col-day { width: 44px; }",
         "    .col-special { width: 120px; }",
         "    .col-chumash { width: 65px; }",
-        "    .col-tehillim { width: 45px; }",
-        "    .col-tanya { width: 75px; }",
+        "    .col-tehillim { width: 50px; }",
+        "    .col-tanya { width: 70px; }",
         "    .col-rambam { width: 65px; }",
         "    .bh { position: absolute; top: 10px; right: 20px; font-size: 18px; }",
-        "    .license { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }",
+        "    .license { margin-top: 5px; text-align: center; font-size: 12px; color: #666; }",
         "  </style>",
         "</head>",
         "<body>",
@@ -316,10 +316,11 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "  <div class=\"license\">",
         "    <p><strong>CC BY-SA 4.0</strong> - This work is licensed under the "
         "Creative Commons Attribution-ShareAlike 4.0 International License. "
-        "You are free to share and adapt this material, provided you give appropriate credit and distribute your "
-        "contributions under the same license. Calendar and learning schedule from Chabad.org. "
-        "Created with the help of Claude Code.</p>",
-        "    <p>Amichai Rosenbaum &lt;amichai.rosenbaum@proton.me&gt;</p>",
+        # "You are free to share and adapt this material, provided you give appropriate credit and distribute your "
+        # "contributions under the same license. "
+        "Data from Chabad.org. "
+        "Created with the help of Claude Code. "
+        "Amichai Rosenbaum &lt;amichai.rosenbaum@proton.me&gt;</p>",
         "  </div>",
         "</body>",
         "</html>",

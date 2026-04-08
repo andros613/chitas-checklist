@@ -34,7 +34,7 @@ $(HTML): $(TANYA_DONE) $(RAMBAM_DONE)
 	python src/jsonl2html.py $(JSONL) --title "Chitas Checklist $(mc) $(y)" > $@
 
 $(PDF): $(HTML)
-	python src/html2pdf.py $(HTML)
+	DYLD_LIBRARY_PATH=/opt/homebrew/lib python src/html2pdf.py $(HTML)
 
 open: $(PDF)
 	open $(PDF)

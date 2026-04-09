@@ -46,6 +46,8 @@ a:hover { text-decoration: underline; }
   border-bottom: 3px solid var(--color-accent);
 }
 .site-header a { color: #fff; font-weight: 600; font-size: 1.1rem; }
+.site-header-sep { color: rgba(255,255,255,0.45); margin: 0 0.25rem; font-size: 1rem; }
+.site-header .site-tool-name { font-size: 0.95rem; opacity: 0.85; }
 .site-header nav a { font-size: 0.9rem; opacity: 0.85; }
 .site-header nav a:hover { opacity: 1; color: var(--color-accent); }
 

@@ -12,6 +12,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  packages: read
 
 concurrency:
   group: pages
@@ -37,6 +38,8 @@ jobs:
       - name: Install web dependencies
         run: npm ci
         working-directory: web
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Astro site
         run: npm run build

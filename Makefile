@@ -1,6 +1,6 @@
 y  := 5786
-m  := 01_nissan
-mc := Nissan
+m  := 02_iyar
+mc := Iyar
 n  := $(y)_$(m)
 
 JSONL_RAW   := data/$(n).jsonl.raw

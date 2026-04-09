@@ -140,18 +140,23 @@ def abbreviate_rambam(rambam: str, prev_header: str = "") -> str:
     if not rambam:
         return ""
     rambam = rambam.replace("Chapter", "Ch.")
-    if " - " in rambam:
-        header, rest = rambam.split(" - ", 1)
+    rambam = rambam.replace(" - ", ": ")
+    rambam = rambam.replace(" and ", " & ")
+    if ": " in rambam:
+        header, rest = rambam.split(": ", 1)
         if header == prev_header:
             return f'"" {rest}'
     return rambam
 
 
-def get_rambam_header(rambam: str) -> str:
+def get_rambam_header_and_rest(rambam: str) -> tuple[str, str]:
     """Extract the header (book/section name) from a Rambam string."""
-    if " - " in rambam:
-        return rambam.split(" - ", 1)[0]
-    return rambam
+    rambam = rambam.replace("Chapter", "Ch.")
+    rambam = rambam.replace(" - ", ": ")
+    rambam = rambam.replace(" and ", " & ")
+    if ": " in rambam:
+        return rambam.split(": ", 1)
+    return rambam, None
 
 
 _WORD_TO_NUM = {
@@ -254,6 +259,7 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
 
     prev_tanya_book = ""
     prev_rambam_header = ""
+    prev_parsha = ""
 
     for entry in entries:
         he_date = entry.get("he_date", "")
@@ -285,7 +291,12 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
             "Thursday": "Thu", "Friday": "Fri", "Shabbat": "Shabbat"
         }
         aliyah_num = day_to_aliyah.get(day_of_week)
-        chumash_display = f"{parsha}: {aliyah_num}" if parsha and aliyah_num else ""
+        if parsha and aliyah_num:
+            parsha_label = '"" ' if parsha == prev_parsha else f"{parsha}: "
+            chumash_display = f"{parsha_label}{aliyah_num}"
+        else:
+            chumash_display = ""
+        prev_parsha = parsha
         tehillim_display = get_tehillim_for_day(he_date, short_month)
         tanya_raw = entry.get("tanya") or ""
         tanya_display = abbreviate_tanya(tanya_raw, prev_tanya_book)

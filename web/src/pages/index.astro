@@ -1,0 +1,47 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import Layout from '../layouts/Layout.astro';
+
+const pdfsDir = path.resolve('./public/pdfs');
+const files = fs.readdirSync(pdfsDir)
+  .filter(f => f.endsWith('.pdf'))
+  .sort()
+  .reverse(); // newest month first
+
+function displayName(filename: string): string {
+  // e.g. "5786_01_nissan.pdf" → "Nissan 5786"
+  const stem = filename.replace(/\.pdf$/, '');
+  const parts = stem.split('_');
+  if (parts.length >= 3) {
+    const year = parts[0];
+    const month = parts.slice(2).join(' ');
+    return month.charAt(0).toUpperCase() + month.slice(1) + ' ' + year;
+  }
+  return stem;
+}
+
+const base = import.meta.env.BASE_URL;
+---
+<Layout title="Browse">
+  <h1 class="page-title">Chitas Checklist</h1>
+  <p class="page-subtitle">
+    Printable monthly checklists for daily Chitas — Chumash-Rashi, Tehillim, and Tanya.
+  </p>
+
+  <div class="pdf-list">
+    {files.map(file => (
+      <div class="pdf-item">
+        <span class="pdf-icon">📄</span>
+        <span class="pdf-name">{displayName(file)}</span>
+        <a
+          class="pdf-download"
+          href={`${base}pdfs/${file}`}
+          download={file}
+        >
+          ↓ Download PDF
+        </a>
+      </div>
+    ))}
+  </div>
+</Layout>

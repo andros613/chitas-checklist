@@ -10,3 +10,6 @@ delme
 data
 .idea
 src/__pycache__/
+web/node_modules
+web/dist
+web/.astro

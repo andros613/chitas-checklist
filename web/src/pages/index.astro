@@ -9,6 +9,27 @@ const files = fs.readdirSync(pdfsDir)
   .sort()
   .reverse(); // newest month first
 
+// Determine current Hebrew year and month number using the Intl API
+const hebrewParts = new Intl.DateTimeFormat('en-u-ca-hebrew', {
+  year: 'numeric',
+  month: 'numeric',
+}).formatToParts(new Date());
+const currentHeYear = parseInt(hebrewParts.find(p => p.type === 'year')!.value);
+const currentHeMonth = parseInt(hebrewParts.find(p => p.type === 'month')!.value);
+
+function fileOrder(filename: string): number {
+  // Returns a sortable integer: heYear * 100 + heMonth
+  const parts = filename.replace(/\.pdf$/, '').split('_');
+  if (parts.length < 2) return 0;
+  return parseInt(parts[0]) * 100 + parseInt(parts[1]);
+}
+
+const currentOrder = currentHeYear * 100 + currentHeMonth;
+
+const currentFiles  = files.filter(f => fileOrder(f) === currentOrder);
+const upcomingFiles = files.filter(f => fileOrder(f) >  currentOrder);
+const pastFiles     = files.filter(f => fileOrder(f) <  currentOrder);
+
 function displayName(filename: string): string {
   // e.g. "5786_07_nissan.pdf" → "Nissan 5786 (Mar-Apr 2026)"
   const stem = filename.replace(/\.pdf$/, '');
@@ -55,6 +76,14 @@ function displayName(filename: string): string {
   return `${monthDisplay} ${heYear}${gregSuffix}`;
 }
 
+function PdfItem(file: string) {
+  return `<div class="pdf-item">
+    <span class="pdf-icon">📄</span>
+    <span class="pdf-name">${displayName(file)}</span>
+    <a class="pdf-download" href="${base}pdfs/${file}" download="${file}">↓ Download PDF</a>
+  </div>`;
+}
+
 const base = import.meta.env.BASE_URL;
 ---
 <Layout title="Browse">
@@ -63,19 +92,89 @@ const base = import.meta.env.BASE_URL;
     Printable monthly checklists for daily Chitas — Chumash-Rashi, Tehillim, and Tanya.
   </p>
 
-  <div class="pdf-list">
-    {files.map(file => (
-      <div class="pdf-item">
-        <span class="pdf-icon">📄</span>
-        <span class="pdf-name">{displayName(file)}</span>
-        <a
-          class="pdf-download"
-          href={`${base}pdfs/${file}`}
-          download={file}
-        >
-          ↓ Download PDF
-        </a>
+  {currentFiles.length > 0 && (
+    <section class="pdf-section">
+      <h2 class="section-title current">Current Month</h2>
+      <div class="pdf-list">
+        {currentFiles.map(file => (
+          <div class="pdf-item">
+            <span class="pdf-icon">📄</span>
+            <span class="pdf-name">{displayName(file)}</span>
+            <a class="pdf-download" href={`${base}pdfs/${file}`} download={file}>↓ Download PDF</a>
+          </div>
+        ))}
       </div>
-    ))}
-  </div>
+    </section>
+  )}
+
+  {upcomingFiles.length > 0 && (
+    <section class="pdf-section">
+      <h2 class="section-title">Upcoming</h2>
+      <div class="pdf-list">
+        {upcomingFiles.map(file => (
+          <div class="pdf-item">
+            <span class="pdf-icon">📄</span>
+            <span class="pdf-name">{displayName(file)}</span>
+            <a class="pdf-download" href={`${base}pdfs/${file}`} download={file}>↓ Download PDF</a>
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {pastFiles.length > 0 && (
+    <section class="pdf-section">
+      <details>
+        <summary class="section-title past">Past Months</summary>
+        <div class="pdf-list">
+          {pastFiles.map(file => (
+            <div class="pdf-item">
+              <span class="pdf-icon">📄</span>
+              <span class="pdf-name">{displayName(file)}</span>
+              <a class="pdf-download" href={`${base}pdfs/${file}`} download={file}>↓ Download PDF</a>
+            </div>
+          ))}
+        </div>
+      </details>
+    </section>
+  )}
 </Layout>
+
+<style>
+  .pdf-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #555;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid #ddd;
+  }
+
+  .section-title.current {
+    color: #1a6b2f;
+  }
+
+  details > summary.section-title {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  details > summary.section-title::before {
+    content: '▶';
+    font-size: 0.65em;
+    transition: transform 0.15s;
+  }
+
+  details[open] > summary.section-title::before {
+    transform: rotate(90deg);
+  }
+</style>

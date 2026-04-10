@@ -9,26 +9,44 @@ const files = fs.readdirSync(pdfsDir)
   .sort()
   .reverse(); // newest month first
 
-// Determine current Hebrew year and month number using the Intl API
+// Determine current Hebrew month using the Intl API.
+// Note: 'month: numeric' returns a name string (e.g. "Nisan"), not a number.
 const hebrewParts = new Intl.DateTimeFormat('en-u-ca-hebrew', {
   year: 'numeric',
-  month: 'numeric',
+  month: 'long',
 }).formatToParts(new Date());
-const currentHeYear = parseInt(hebrewParts.find(p => p.type === 'year')!.value);
-const currentHeMonth = parseInt(hebrewParts.find(p => p.type === 'month')!.value);
+const currentHeYear = parseInt((hebrewParts.find(p => p.type === 'year')?.value ?? '0').replace(/\D/g, ''), 10);
+const currentHeMonthName = hebrewParts.find(p => p.type === 'month')?.value ?? '';
 
+// Map Intl Hebrew month names → filename slugs
+const INTL_TO_SLUG: Record<string, string> = {
+  'Tishri': 'tishrei', 'Heshvan': 'cheshvan', 'Kislev': 'kislev',
+  'Tevet': 'tevet', 'Shevat': 'shevat', 'Adar': 'adar',
+  'Adar I': 'adar_i', 'Adar II': 'adar_ii',
+  'Nisan': 'nissan', 'Iyar': 'iyar', 'Sivan': 'sivan',
+  'Tamuz': 'tammuz', 'Av': 'av', 'Elul': 'elul',
+};
+const currentSlug = INTL_TO_SLUG[currentHeMonthName] ?? '';
+
+function fileYear(filename: string): number {
+  return parseInt(filename.split('_')[0], 10);
+}
+function fileSlug(filename: string): string {
+  return filename.replace(/\.pdf$/, '').split('_').slice(2).join('_').toLowerCase();
+}
 function fileOrder(filename: string): number {
-  // Returns a sortable integer: heYear * 100 + heMonth
   const parts = filename.replace(/\.pdf$/, '').split('_');
-  if (parts.length < 2) return 0;
-  return parseInt(parts[0]) * 100 + parseInt(parts[1]);
+  return parseInt(parts[0], 10) * 100 + parseInt(parts[1], 10);
 }
 
-const currentOrder = currentHeYear * 100 + currentHeMonth;
+// Match current month by year+slug; use its actual order for the past/upcoming split.
+// This correctly handles leap years where month numbers shift.
+const currentFile = files.find(f => fileYear(f) === currentHeYear && fileSlug(f) === currentSlug);
+const currentOrderActual = currentFile ? fileOrder(currentFile) : NaN;
 
-const currentFiles  = files.filter(f => fileOrder(f) === currentOrder);
-const upcomingFiles = files.filter(f => fileOrder(f) >  currentOrder);
-const pastFiles     = files.filter(f => fileOrder(f) <  currentOrder);
+const currentFiles  = currentFile ? [currentFile] : [];
+const upcomingFiles = files.filter(f => isNaN(currentOrderActual) ? true : fileOrder(f) > currentOrderActual);
+const pastFiles     = files.filter(f => isNaN(currentOrderActual) ? false : fileOrder(f) < currentOrderActual);
 
 function displayName(filename: string): string {
   // e.g. "5786_07_nissan.pdf" → "Nissan 5786 (Mar-Apr 2026)"
@@ -74,14 +92,6 @@ function displayName(filename: string): string {
   }
 
   return `${monthDisplay} ${heYear}${gregSuffix}`;
-}
-
-function PdfItem(file: string) {
-  return `<div class="pdf-item">
-    <span class="pdf-icon">📄</span>
-    <span class="pdf-name">${displayName(file)}</span>
-    <a class="pdf-download" href="${base}pdfs/${file}" download="${file}">↓ Download PDF</a>
-  </div>`;
 }
 
 const base = import.meta.env.BASE_URL;

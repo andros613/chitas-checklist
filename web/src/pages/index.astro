@@ -98,10 +98,13 @@ function displayName(filename: string): string {
 const base = import.meta.env.BASE_URL;
 ---
 <Layout title="Browse">
-  <h1 class="page-title">Chitas Checklist</h1>
-  <p class="page-subtitle">
-    Printable monthly checklists for daily Chitas — Chumash-Rashi, Tehillim, and Tanya.
-  </p>
+  <div class="hero">
+    <img src={`${base}temple_from_space_v02.png`} alt="Temple from space" class="hero-img" />
+    <div class="hero-overlay">
+      <h1 class="hero-title">Chitas Checklist</h1>
+      <p class="hero-subtitle">Printable monthly checklists for daily Chitas — Chumash-Rashi, Tehillim, and Tanya.</p>
+    </div>
+  </div>
 
   {currentFiles.length > 0 && (
     <section class="pdf-section">

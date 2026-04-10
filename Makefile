@@ -1,6 +1,6 @@
 y  := 5786
-m  := 02_iyar
-mc := Iyar
+m  := 12_elul
+mc := Elul
 n  := $(y)_$(m)
 
 JSONL_RAW   := data/$(n).jsonl.raw

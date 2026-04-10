@@ -143,7 +143,7 @@ def abbreviate_rambam(rambam: str, prev_header: str = "") -> str:
     rambam = rambam.replace(" - ", ": ")
     rambam = rambam.replace(" and ", " & ")
     if ": " in rambam:
-        header, rest = rambam.split(": ", 1)
+        header, rest = rambam.rsplit(": ", 1)
         if header == prev_header:
             return f'"" {rest}'
     return rambam
@@ -155,7 +155,7 @@ def get_rambam_header_and_rest(rambam: str) -> tuple[str, str]:
     rambam = rambam.replace(" - ", ": ")
     rambam = rambam.replace(" and ", " & ")
     if ": " in rambam:
-        return rambam.split(": ", 1)
+        return rambam.rsplit(": ", 1)
     return rambam, None
 
 
@@ -222,13 +222,13 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         "    tr.special { background-color: #e3f2fd; }",
         "    .parsha { font-style: italic; }",
         "    .checkbox { width: 15px; text-align: center; }",
-        "    .col-hedate { width: 55px; }",
+        "    .col-hedate { width: 60px; }",
         "    .col-endate { width: 45px; }",
-        "    .col-day { width: 44px; }",
-        "    .col-special { width: 120px; }",
-        "    .col-chumash { width: 65px; }",
+        "    .col-day { width: 45px; }",
+        "    .col-special { width: 90px; }",
+        "    .col-chumash { width: 90px; }",
         "    .col-tehillim { width: 50px; }",
-        "    .col-tanya { width: 70px; }",
+        "    .col-tanya { width: 85px; }",
         "    .col-rambam { width: 65px; }",
         "    .bh { position: absolute; top: 10px; right: 20px; font-size: 18px; }",
         "    .license { margin-top: 5px; text-align: center; font-size: 12px; color: #666; }",
@@ -316,7 +316,7 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         html_parts.append("        <td class=\"checkbox\">☐</td>")
         rambam_raw = entry.get("rambam_1_ch") or ""
         rambam_display = abbreviate_rambam(rambam_raw, prev_rambam_header)
-        prev_rambam_header = get_rambam_header(rambam_raw)
+        prev_rambam_header, _ = get_rambam_header_and_rest(rambam_raw)
         html_parts.append(f"        <td>{rambam_display}</td>")
         html_parts.append("        <td class=\"checkbox\">☐</td>")
         html_parts.append("      </tr>")
@@ -331,7 +331,7 @@ def generate_html(entries: list[dict], title: str, short_month: bool = False) ->
         # "contributions under the same license. "
         "Data from Chabad.org. "
         "Created with the help of Claude Code. "
-        "Amichai Rosenbaum &lt;amichai.rosenbaum@proton.me&gt;</p>",
+        "Amichai Andy Rosenbaum &lt;andros613@proton.me&gt;</p>",
         "  </div>",
         "</body>",
         "</html>",

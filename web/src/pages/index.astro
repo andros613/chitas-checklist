@@ -10,15 +10,49 @@ const files = fs.readdirSync(pdfsDir)
   .reverse(); // newest month first
 
 function displayName(filename: string): string {
-  // e.g. "5786_01_nissan.pdf" → "Nissan 5786"
+  // e.g. "5786_07_nissan.pdf" → "Nissan 5786 (Mar-Apr 2026)"
   const stem = filename.replace(/\.pdf$/, '');
   const parts = stem.split('_');
-  if (parts.length >= 3) {
-    const year = parts[0];
-    const month = parts.slice(2).join(' ');
-    return month.charAt(0).toUpperCase() + month.slice(1) + ' ' + year;
+  if (parts.length < 3) return stem;
+
+  const heYear = parseInt(parts[0], 10);
+  const monthSlug = parts.slice(2).join('_').toLowerCase();
+  const monthDisplay = monthSlug.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+  // Hebrew month → Gregorian months + year offsets relative to Hebrew year
+  // Offset = Gregorian year - Hebrew year (e.g. Nissan 5786 = 2026, offset = 2026-5786 = -3760)
+  const GREG_MAP: Record<string, { months: string[]; offsets: number[] }> = {
+    tishrei:  { months: ['Sep', 'Oct'], offsets: [-3761, -3761] },
+    cheshvan: { months: ['Oct', 'Nov'], offsets: [-3761, -3761] },
+    kislev:   { months: ['Nov', 'Dec'], offsets: [-3761, -3761] },
+    tevet:    { months: ['Dec', 'Jan'], offsets: [-3761, -3760] }, // spans Gregorian year
+    shevat:   { months: ['Jan', 'Feb'], offsets: [-3760, -3760] },
+    adar:     { months: ['Feb', 'Mar'], offsets: [-3760, -3760] },
+    adar_i:   { months: ['Feb', 'Mar'], offsets: [-3760, -3760] },
+    adar_ii:  { months: ['Mar'],        offsets: [-3760] },
+    nissan:   { months: ['Mar', 'Apr'], offsets: [-3760, -3760] },
+    iyar:     { months: ['Apr', 'May'], offsets: [-3760, -3760] },
+    sivan:    { months: ['May', 'Jun'], offsets: [-3760, -3760] },
+    tammuz:   { months: ['Jun', 'Jul'], offsets: [-3760, -3760] },
+    av:       { months: ['Jul', 'Aug'], offsets: [-3760, -3760] },
+    elul:     { months: ['Aug', 'Sep'], offsets: [-3760, -3760] },
+  };
+
+  const info = GREG_MAP[monthSlug];
+  let gregSuffix = '';
+  if (info) {
+    const y1 = heYear + info.offsets[0];
+    if (info.months.length === 1) {
+      gregSuffix = ` (${info.months[0]} ${y1})`;
+    } else {
+      const y2 = heYear + info.offsets[1];
+      gregSuffix = y1 === y2
+        ? ` (${info.months[0]}-${info.months[1]} ${y1})`
+        : ` (${info.months[0]} ${y1} - ${info.months[1]} ${y2})`;
+    }
   }
-  return stem;
+
+  return `${monthDisplay} ${heYear}${gregSuffix}`;
 }
 
 const base = import.meta.env.BASE_URL;

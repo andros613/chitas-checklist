@@ -45,7 +45,8 @@ const currentFile = files.find(f => fileYear(f) === currentHeYear && fileSlug(f)
 const currentOrderActual = currentFile ? fileOrder(currentFile) : NaN;
 
 const currentFiles  = currentFile ? [currentFile] : [];
-const upcomingFiles = files.filter(f => isNaN(currentOrderActual) ? true : fileOrder(f) > currentOrderActual);
+// upcoming: ascending order (next month first); past: descending (most recent first, already reversed)
+const upcomingFiles = files.filter(f => isNaN(currentOrderActual) ? true : fileOrder(f) > currentOrderActual).reverse();
 const pastFiles     = files.filter(f => isNaN(currentOrderActual) ? false : fileOrder(f) < currentOrderActual);
 
 function displayName(filename: string): string {
@@ -107,11 +108,14 @@ const base = import.meta.env.BASE_URL;
       <h2 class="section-title current">Current Month</h2>
       <div class="pdf-list">
         {currentFiles.map(file => (
-          <div class="pdf-item">
-            <span class="pdf-icon">📄</span>
-            <span class="pdf-name">{displayName(file)}</span>
-            <a class="pdf-download" href={`${base}pdfs/${file}`} download={file}>↓ Download PDF</a>
-          </div>
+          <details class="pdf-item">
+            <summary>
+              <span class="pdf-icon">📄</span>
+              <span class="pdf-name">{displayName(file)}</span>
+              <a class="pdf-download" href={`${base}pdfs/${file}`} download={file} onclick="event.stopPropagation()">↓ Download PDF</a>
+            </summary>
+            <iframe class="pdf-viewer" src={`${base}pdfs/${file}`}></iframe>
+          </details>
         ))}
       </div>
     </section>
@@ -122,11 +126,14 @@ const base = import.meta.env.BASE_URL;
       <h2 class="section-title">Upcoming</h2>
       <div class="pdf-list">
         {upcomingFiles.map(file => (
-          <div class="pdf-item">
-            <span class="pdf-icon">📄</span>
-            <span class="pdf-name">{displayName(file)}</span>
-            <a class="pdf-download" href={`${base}pdfs/${file}`} download={file}>↓ Download PDF</a>
-          </div>
+          <details class="pdf-item">
+            <summary>
+              <span class="pdf-icon">📄</span>
+              <span class="pdf-name">{displayName(file)}</span>
+              <a class="pdf-download" href={`${base}pdfs/${file}`} download={file} onclick="event.stopPropagation()">↓ Download PDF</a>
+            </summary>
+            <iframe class="pdf-viewer" src={`${base}pdfs/${file}`}></iframe>
+          </details>
         ))}
       </div>
     </section>
@@ -138,11 +145,14 @@ const base = import.meta.env.BASE_URL;
         <summary class="section-title past">Past Months</summary>
         <div class="pdf-list">
           {pastFiles.map(file => (
-            <div class="pdf-item">
-              <span class="pdf-icon">📄</span>
-              <span class="pdf-name">{displayName(file)}</span>
-              <a class="pdf-download" href={`${base}pdfs/${file}`} download={file}>↓ Download PDF</a>
-            </div>
+            <details class="pdf-item">
+              <summary>
+                <span class="pdf-icon">📄</span>
+                <span class="pdf-name">{displayName(file)}</span>
+                <a class="pdf-download" href={`${base}pdfs/${file}`} download={file} onclick="event.stopPropagation()">↓ Download PDF</a>
+              </summary>
+              <iframe class="pdf-viewer" src={`${base}pdfs/${file}`}></iframe>
+            </details>
           ))}
         </div>
       </details>
@@ -186,5 +196,26 @@ const base = import.meta.env.BASE_URL;
 
   details[open] > summary.section-title::before {
     transform: rotate(90deg);
+  }
+
+  details.pdf-item > summary {
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  details.pdf-item > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .pdf-viewer {
+    display: block;
+    width: 100%;
+    height: 80vh;
+    border: 1px solid #ccc;
+    margin-top: 0.5rem;
+    border-radius: 4px;
   }
 </style>

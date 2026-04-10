@@ -98,12 +98,17 @@ function displayName(filename: string): string {
 const base = import.meta.env.BASE_URL;
 ---
 <Layout title="Browse">
-  <div class="hero">
+  <div class="hero" id="hero" role="button" tabindex="0" aria-label="View full image">
     <img src={`${base}temple_from_space_v02.png`} alt="Temple from space" class="hero-img" />
     <div class="hero-overlay">
       <h1 class="hero-title">Chitas Checklist</h1>
       <p class="hero-subtitle">Printable monthly checklists for daily Chitas — Chumash-Rashi, Tehillim, and Tanya.</p>
     </div>
+  </div>
+
+  <div class="lightbox" id="lightbox" aria-modal="true" role="dialog" aria-label="Full image view" hidden>
+    <img src={`${base}temple_from_space_v02.png`} alt="Temple from space" class="lightbox-img" />
+    <button class="lightbox-close" aria-label="Close">✕</button>
   </div>
 
   {currentFiles.length > 0 && (
@@ -152,6 +157,21 @@ const base = import.meta.env.BASE_URL;
     </section>
   )}
 </Layout>
+
+<script>
+  const hero     = document.getElementById('hero')!;
+  const lightbox = document.getElementById('lightbox')!;
+  const lbClose  = lightbox.querySelector('.lightbox-close')!;
+
+  function open()  { lightbox.hidden = false; document.body.style.overflow = 'hidden'; }
+  function close() { lightbox.hidden = true;  document.body.style.overflow = ''; }
+
+  hero.addEventListener('click', open);
+  hero.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') open(); });
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) close(); });
+  lbClose.addEventListener('click', close);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !lightbox.hidden) close(); });
+</script>
 
 <style>
   .pdf-section {
